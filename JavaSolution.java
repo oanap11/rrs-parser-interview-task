@@ -13,10 +13,9 @@ public class JavaSolution {
 
 	public static void main(String[] args) {
 		
-		//second requirement of the application
 		System.out.println(parseRSS("https://rss.nytimes.com/services/xml/rss/nyt/World.xml"));
 		
-		//third requierement of the application
+		//third requirement of the application
 		String versionNumber = "2.5.756";
 		parseVersionNumber(versionNumber);
 	
@@ -27,52 +26,31 @@ public class JavaSolution {
 			URL rssUrl = new URL(urlAddress);
 			BufferedReader in = new BufferedReader(new InputStreamReader(rssUrl.openStream())); //reads the contents of the webpage
 			
-			String parsedInfo = "";
+			StringBuilder parsedInfo = new StringBuilder();
 			String line; //used for reading and storing lines
 			
-			//when the contents of the webpage have been read, in.readLine() will return null
-			//finds the required opening tag and retrieves the substring between it and the end tag
 			while((line = in.readLine()) != null) {
-				if (line.contains("<title>")) {
-					int firstPosTitle = line.indexOf("<title>");
-					String temp = line.substring(firstPosTitle);
-					temp = temp.replace("<title>", "");
-					int lastPosTitle = temp.indexOf("</title");
-					temp = temp.substring(0, lastPosTitle);
-					parsedInfo += "\nTitle: " + temp + "\n";
-				}
-				
-				if (line.contains("<dc:creator>")) {
-					int firstPosAuthor = line.indexOf("<dc:creator>");
-					String temp = line.substring(firstPosAuthor);
-					temp = temp.replace("<dc:creator>", "");
-					int lastPosAuthor = temp.indexOf("</dc:creator");
-					temp = temp.substring(0, lastPosAuthor);
-					parsedInfo += "Author: " + temp + "\n";
-				}
-				
-				if (line.contains("<pubDate>")) {
-					int firstPosDate = line.indexOf("<pubDate>");
-					String temp = line.substring(firstPosDate);
-					temp = temp.replace("<pubDate>", "");
-					int lastPosDate = temp.indexOf("</pubDate");
-					temp = temp.substring(0, lastPosDate);
-					parsedInfo += "Date: " + temp + "\n\n";
-				}
-				
-	
-				if (line.contains("<description>")) {
-					int firstPosDate = line.indexOf("<description>");
-					String temp = line.substring(firstPosDate);
-					temp = temp.replace("<description>", "");
-					int lastPosDate = temp.indexOf("</description");
-					temp = temp.substring(0, lastPosDate);
-					parsedInfo += "Description: " + temp + "\n";
-				}
+				String title = extractTagContent(line, "<title>");
+                String author = extractTagContent(line, "<dc:creator>");
+                String pubDate = extractTagContent(line, "<pubDate>");
+                String description = extractTagContent(line, "<description>");
+                
+                if (title != null) {
+                    parsedInfo.append("\nTitle: ").append(title).append("\n");
+                }
+                if (author != null) {
+                    parsedInfo.append("Author: ").append(author).append("\n");
+                }
+                if (pubDate != null) {
+                    parsedInfo.append("Date: ").append(pubDate).append("\n\n");
+                }
+                if (description != null) {
+                    parsedInfo.append("Description: ").append(description).append("\n");
+                }
 			}
 			
 			in.close();
-			return parsedInfo;
+			return parsedInfo.toString();
 		}
 		catch(MalformedURLException ue) {
 			System.out.println("Malformed URL.");
@@ -82,6 +60,20 @@ public class JavaSolution {
 		}
 		return null;
 	}
+	
+	public static String extractTagContent(String line, String tagName) {
+        if (line.contains(tagName)) {
+            int firstPos = line.indexOf(tagName);
+            String temp = line.substring(firstPos);
+            temp = temp.replace(tagName, "");
+            int lastPos = temp.indexOf("</" + tagName.substring(1));
+            if (lastPos != -1) {
+                temp = temp.substring(0, lastPos);
+                return temp;
+            }
+        }
+        return null;
+    }
 	
 	public static void parseVersionNumber(String vNumber) {
 		tokenizer = new StringTokenizer(vNumber, ".");
